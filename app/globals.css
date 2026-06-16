@@ -1,0 +1,120 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAFAF8;
+  --foreground: #1a1a1a;
+  --accent: #F4A47C;
+  --accent-light: #FFF0E8;
+  --card-bg: #FFFFFF;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-accent: var(--accent);
+  --color-accent-light: var(--accent-light);
+  --font-sans: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', sans-serif;
+  --font-serif: 'Noto Serif SC', 'SimSun', 'STSong', serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Noto Serif SC', 'SimSun', 'STSong', serif;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.04em;
+}
+
+@keyframes gradient-breathe {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.gradient-animate {
+  background-size: 200% 200%;
+  animation: gradient-breathe 8s ease infinite;
+  transition: background 1.5s ease-in-out;
+}
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.8s ease forwards;
+}
+
+.animate-fade-in-up-delay {
+  animation: fade-in-up 0.8s ease 0.3s forwards;
+  opacity: 0;
+}
+
+.animate-fade-in-up-delay-2 {
+  animation: fade-in-up 0.8s ease 0.6s forwards;
+  opacity: 0;
+}
+
+.mask-gradient {
+  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
+}
+
+/* Weather card animations */
+@keyframes sun-glow {
+  0%, 100% { box-shadow: 0 0 20px 8px rgba(251, 191, 36, 0.3); }
+  50% { box-shadow: 0 0 35px 14px rgba(251, 191, 36, 0.5); }
+}
+
+@keyframes cloud-float {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(6px); }
+}
+
+@keyframes rain-fall {
+  0% { transform: translateY(-8px); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(45px); opacity: 0; }
+}
+
+@keyframes snow-fall {
+  0% { transform: translate(0, -8px); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translate(5px, 45px); opacity: 0; }
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.anchorBL,
+.anchorTR,
+.BMapGL_cpyCtrl,
+.BMapGL_logoWrap,
+.BMapGL_logo,
+.BMap_cpyCtrl,
+.BMap_scaleCtrl,
+[class*="BMapGL_cp"],
+[class*="anchorBL"] {
+  display: none !important;
+}

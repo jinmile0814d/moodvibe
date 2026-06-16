@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:dev.qweather.com)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:q4j8fdxpoe.feishu.cn)",
+      "WebFetch(domain:docs.qweatherapi.com)",
+      "PowerShell(New-Item *)",
+      "PowerShell($url = \"https://api.map.baidu.com/panorama/v2?ak=XUjRpnyjfFb0lpSU6lVkiNtW8lTMZfRG&width=480&height=320&location=116.404,39.915&fov=90\"; $res = Invoke-WebRequest -Uri $url -Method Head -UseBasicParsing; $res.StatusCode; $res.Headers['Content-Type'])",
+      "PowerShell($url = \"https://api.map.baidu.com/panorama/v2?ak=XUjRpnyjfFb0lpSU6lVkiNtW8lTMZfRG&width=480&height=320&location=116.404,39.915&fov=90\"; try { $res = Invoke-WebRequest -Uri $url -Method Get -UseBasicParsing; \"Status: $\\($res.StatusCode\\)\"; \"ContentType: $\\($res.Headers['Content-Type']\\)\"; \"Length: $\\($res.Content.Length\\)\" } catch { \"Error: $\\($_.Exception.Message\\)\" })",
+      "WebFetch(domain:uinotes.com)"
+    ]
+  }
+}
