@@ -1,9 +1,7 @@
-'use client';
+export const dynamic = 'force-dynamic';
 
-import dynamic from 'next/dynamic';
-
-const PlayerContent = dynamic(() => import('./PlayerContent'), { ssr: false });
+import PlayerWrapper from './PlayerWrapper';
 
 export default function PlayerPage() {
-  return <PlayerContent />;
+  return <PlayerWrapper />;
 }
