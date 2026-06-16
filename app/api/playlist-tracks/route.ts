@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         let url: string | null = null;
         let lrc: string | null = null;
         try {
-          const urlRes = await song_url_v1({ id: song.id, level: 'exhigh', cookie });
+          const urlRes = await song_url_v1({ id: song.id, level: 'standard', cookie });
           url = urlRes.body?.data?.[0]?.url || null;
         } catch {}
         try {

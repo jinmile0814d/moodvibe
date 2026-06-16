@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ url: null });
     }
 
-    const urlRes = await song_url_v1({ id, level: 'exhigh', cookie });
+    const urlRes = await song_url_v1({ id, level: 'standard', cookie });
     const url = urlRes.body?.data?.[0]?.url || null;
 
     return NextResponse.json({ url });

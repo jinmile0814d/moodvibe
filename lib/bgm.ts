@@ -202,7 +202,7 @@ export async function getBGM(mood: Mood, musicPref?: MusicPreference, statusIds?
     const song = tracks[Math.floor(Math.random() * tracks.length)];
     const songId = song.id;
 
-    const urlRes = await song_url_v1({ id: songId, level: 'exhigh', cookie });
+    const urlRes = await song_url_v1({ id: songId, level: 'standard', cookie });
     const urlData = urlRes.body?.data?.[0];
     const playUrl = urlData?.url || null;
 
@@ -251,7 +251,7 @@ export async function getBGMFromPlaylist(playlistId: number, excludeSong?: strin
     const song = candidates[Math.floor(Math.random() * candidates.length)];
     const songId = song.id;
 
-    const urlRes = await song_url_v1({ id: songId, level: 'exhigh', cookie });
+    const urlRes = await song_url_v1({ id: songId, level: 'standard', cookie });
     const urlData = urlRes.body?.data?.[0];
     const playUrl = urlData?.url || null;
 
