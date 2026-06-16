@@ -1,5 +1,6 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useAudio } from '@/components/AudioProvider';
@@ -28,6 +29,14 @@ function parseLRC(lrc: string): LyricLine[] {
 }
 
 export default function PlayerPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-100" />}>
+      <PlayerContent />
+    </Suspense>
+  );
+}
+
+function PlayerContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { state: audioState, play, togglePlay, seek } = useAudio();
