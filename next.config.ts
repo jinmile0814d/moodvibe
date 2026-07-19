@@ -5,6 +5,7 @@ const nextConfig: NextConfig = {
     '@neteasecloudmusicapienhanced/api',
     '@neteasecloudmusicapienhanced/unblockmusic-utils',
     'sharp',
+    'xml2js',
   ],
 };
 
