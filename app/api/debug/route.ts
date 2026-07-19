@@ -1,8 +1,20 @@
 // Vercel环境检查脚本
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
+
+interface Diagnostics {
+  env: {
+    hasNeteasePhone: boolean;
+    hasNeteasePassword: boolean;
+    hasNeteaseCookie: boolean;
+    phoneValue: string;
+  };
+  cookieFileExists: boolean;
+  cookieFileError?: string;
+  timestamp: string;
+}
 
 export async function GET() {
-  const diagnostics = {
+  const diagnostics: Diagnostics = {
     env: {
       hasNeteasePhone: !!process.env.NETEASE_PHONE,
       hasNeteasePassword: !!process.env.NETEASE_PASSWORD,
@@ -33,7 +45,7 @@ export async function GET() {
       return NextResponse.json({
         ...diagnostics,
         error: 'No cookie available',
-        suggestion: 'Check NETEASE_PHONE and NETEASE_PASSWORD in Vercel environment variables',
+        suggestion: 'Check NETEASE_COOKIE in Vercel environment variables',
       });
     }
 
