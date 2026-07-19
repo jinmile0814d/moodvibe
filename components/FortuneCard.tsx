@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import ZodiacModal from './ZodiacModal';
 import { zodiacList, getUserZodiac, setUserZodiac, getTodayFortune, clearFortuneCache } from '@/lib/fortune';
 import type { ZodiacSign, FortuneData } from '@/lib/types';
@@ -14,17 +14,12 @@ const dimensionLabels: { key: keyof FortuneData['dimensions']; label: string; ba
 ];
 
 export default function FortuneCard() {
-  const [zodiac, setZodiac] = useState<ZodiacSign | null>(null);
-  const [fortune, setFortune] = useState<FortuneData | null>(null);
-  const [showModal, setShowModal] = useState(false);
-
-  useEffect(() => {
+  const [zodiac, setZodiac] = useState<ZodiacSign | null>(() => getUserZodiac());
+  const [fortune, setFortune] = useState<FortuneData | null>(() => {
     const saved = getUserZodiac();
-    if (saved) {
-      setZodiac(saved);
-      setFortune(getTodayFortune());
-    }
-  }, []);
+    return saved ? getTodayFortune() : null;
+  });
+  const [showModal, setShowModal] = useState(false);
 
   function handleSelectZodiac(z: ZodiacSign) {
     setUserZodiac(z);

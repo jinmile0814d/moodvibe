@@ -2,12 +2,9 @@ import { Mood } from './gradient';
 import { extractColorsFromCover } from './color-extract';
 import fs from 'fs';
 import path from 'path';
-
-interface MusicPreference {
-  genres: string[];
-  language: string;
-  emotionMode: 'match' | 'contrast';
-}
+import { top_playlist, playlist_track_all, song_url_v1, lyric } from '@neteasecloudmusicapienhanced/api';
+import type { MusicPreference } from './types';
+import { getCookie } from './netease-config';
 
 export interface BGMItem {
   song: string;
@@ -95,19 +92,6 @@ const fallbackPool: Record<Mood, BGMItem[]> = {
   ],
 };
 
-function getCookie(): string | null {
-  if (process.env.NETEASE_COOKIE) return process.env.NETEASE_COOKIE;
-  try {
-    const cookiePath = path.join(process.cwd(), '.netease_cookie');
-    if (fs.existsSync(cookiePath)) {
-      return fs.readFileSync(cookiePath, 'utf-8').trim();
-    }
-  } catch {
-    // cookie file not found
-  }
-  return null;
-}
-
 const genreKeywords: Record<string, string> = {
   pop: '流行',
   folk: '民谣',
@@ -148,8 +132,6 @@ export async function getBGM(mood: Mood, musicPref?: MusicPreference, statusIds?
   }
 
   try {
-    const { top_playlist, playlist_track_all, song_url_v1, song_detail, lyric } = require('@neteasecloudmusicapienhanced/api');
-
     let keyword: string;
     if (statusIds?.length) {
       const validIds = statusIds.filter(id => statusKeywords[id]);
@@ -184,8 +166,8 @@ export async function getBGM(mood: Mood, musicPref?: MusicPreference, statusIds?
     }
     // 用语言标签作为 cat 分类，风格关键词作为歌单名过滤
     const cat = langTag || '华语';
-    const playlistRes = await top_playlist({ cat, limit: 20, order: 'hot', cookie });
-    let playlists = playlistRes.body?.playlists || [];
+    const playlistRes = await top_playlist({ cat, limit: 20, order: 'hot' as any, cookie });
+    let playlists = (playlistRes.body as any)?.playlists || [];
 
     // 用关键词过滤歌单名，找匹配的
     const filtered = playlists.filter((p: { name: string }) =>
@@ -197,13 +179,18 @@ export async function getBGM(mood: Mood, musicPref?: MusicPreference, statusIds?
     const playlist = playlists[Math.floor(Math.random() * playlists.length)];
     const tracksRes = await playlist_track_all({ id: playlist.id, limit: 50, cookie });
     const tracks = tracksRes.body?.songs;
-    if (!tracks?.length) throw new Error('no tracks');
+    if (!Array.isArray(tracks) || tracks.length === 0) throw new Error('no tracks');
 
-    const song = tracks[Math.floor(Math.random() * tracks.length)];
+    const song = tracks[Math.floor(Math.random() * tracks.length)] as any;
     const songId = song.id;
 
-    const urlRes = await song_url_v1({ id: songId, level: 'standard', cookie });
-    const urlData = urlRes.body?.data?.[0];
+    const urlRes = await song_url_v1({
+      id: songId,
+      level: 'standard' as any,
+      cookie,
+      realIP: '116.25.146.177' // 使用国内IP绕过地域限制
+    });
+    const urlData = (urlRes.body as any)?.data?.[0];
     const playUrl = urlData?.url || null;
 
     const cover: string | null = song.al?.picUrl || null;
@@ -212,7 +199,7 @@ export async function getBGM(mood: Mood, musicPref?: MusicPreference, statusIds?
       (async () => {
         try {
           const lyricRes = await lyric({ id: songId, cookie });
-          return (lyricRes.body?.lrc?.lyric || null) as string | null;
+          return ((lyricRes.body as any)?.lrc?.lyric || null) as string | null;
         } catch { return null; }
       })(),
       cover ? extractColorsFromCover(cover) : Promise.resolve(null),
@@ -220,7 +207,7 @@ export async function getBGM(mood: Mood, musicPref?: MusicPreference, statusIds?
 
     return {
       song: song.name,
-      artist: song.ar?.map((a: { name: string }) => a.name).join('/') || '未知',
+      artist: (song.ar as any)?.map((a: { name: string }) => a.name).join('/') || '未知',
       url: playUrl,
       cover,
       lyric: lrcText,
@@ -239,20 +226,23 @@ export async function getBGMFromPlaylist(playlistId: number, excludeSong?: strin
   if (!cookie) return null;
 
   try {
-    const { playlist_track_all, song_url_v1, lyric } = require('@neteasecloudmusicapienhanced/api');
-
     const tracksRes = await playlist_track_all({ id: playlistId, limit: 50, cookie });
     const tracks = tracksRes.body?.songs;
-    if (!tracks?.length) return null;
+    if (!Array.isArray(tracks) || tracks.length === 0) return null;
 
-    const candidates = excludeSong ? tracks.filter((t: { name: string }) => t.name !== excludeSong) : tracks;
-    if (!candidates.length) return null;
+    const candidates = excludeSong ? (tracks as any[]).filter((t: any) => t.name !== excludeSong) : tracks;
+    if (!Array.isArray(candidates) || candidates.length === 0) return null;
 
-    const song = candidates[Math.floor(Math.random() * candidates.length)];
+    const song = (candidates as any[])[Math.floor(Math.random() * candidates.length)];
     const songId = song.id;
 
-    const urlRes = await song_url_v1({ id: songId, level: 'standard', cookie });
-    const urlData = urlRes.body?.data?.[0];
+    const urlRes = await song_url_v1({
+      id: songId,
+      level: 'standard' as any,
+      cookie,
+      realIP: '116.25.146.177'
+    });
+    const urlData = (urlRes.body as any)?.data?.[0];
     const playUrl = urlData?.url || null;
 
     const cover: string | null = song.al?.picUrl || null;
@@ -261,7 +251,7 @@ export async function getBGMFromPlaylist(playlistId: number, excludeSong?: strin
       (async () => {
         try {
           const lyricRes = await lyric({ id: songId, cookie });
-          return (lyricRes.body?.lrc?.lyric || null) as string | null;
+          return ((lyricRes.body as any)?.lrc?.lyric || null) as string | null;
         } catch { return null; }
       })(),
       cover ? extractColorsFromCover(cover) : Promise.resolve(null),
@@ -269,7 +259,7 @@ export async function getBGMFromPlaylist(playlistId: number, excludeSong?: strin
 
     return {
       song: song.name,
-      artist: song.ar?.map((a: { name: string }) => a.name).join('/') || '未知',
+      artist: (song.ar as any)?.map((a: { name: string }) => a.name).join('/') || '未知',
       url: playUrl,
       cover,
       lyric: lrcText,

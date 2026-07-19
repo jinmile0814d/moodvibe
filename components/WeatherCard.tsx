@@ -102,22 +102,23 @@ interface Props {
 }
 
 export default function WeatherCard({ city, onCityChange }: Props) {
-  const [weather, setWeather] = useState<WeatherInfo | null>(null);
+  const [weather, setWeather] = useState<WeatherInfo | null>(() => {
+    if (typeof window !== 'undefined' && city) {
+      return getCachedWeather(city);
+    }
+    return null;
+  });
   const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [filter, setFilter] = useState('');
-  const [timeOfDay, setTimeOfDay] = useState<TimeOfDay>('day');
-  const [currentDate, setCurrentDate] = useState('');
-
-  useEffect(() => {
-    setTimeOfDay(getTimeOfDay());
-    setCurrentDate(getCurrentDate());
-  }, []);
+  const timeOfDay = getTimeOfDay();
+  const currentDate = getCurrentDate();
 
   useEffect(() => {
     if (!city) return;
+
     const cached = getCachedWeather(city);
-    if (cached) { setWeather(cached); return; }
+    if (cached) return;
 
     setLoading(true);
     fetch(`/api/weather?city=${encodeURIComponent(city)}`)

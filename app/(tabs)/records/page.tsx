@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import HistoryCard, { groupByDate } from '@/components/HistoryCard';
 import { getHistory, deleteHistoryRecord } from '@/lib/history';
@@ -8,11 +8,7 @@ import type { HistoryRecord } from '@/lib/types';
 
 export default function RecordsPage() {
   const router = useRouter();
-  const [history, setHistory] = useState<HistoryRecord[]>([]);
-
-  useEffect(() => {
-    setHistory(getHistory());
-  }, []);
+  const [history, setHistory] = useState<HistoryRecord[]>(() => getHistory());
 
   function handlePlayRecord(record: HistoryRecord) {
     sessionStorage.setItem('moodvibe-player-data', JSON.stringify(record));

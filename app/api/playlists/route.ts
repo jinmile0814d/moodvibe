@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-function getCookie(): string | null {
-  if (process.env.NETEASE_COOKIE) return process.env.NETEASE_COOKIE;
-  try {
-    const cookiePath = path.join(process.cwd(), '.netease_cookie');
-    if (fs.existsSync(cookiePath)) {
-      return fs.readFileSync(cookiePath, 'utf-8').trim();
-    }
-  } catch {}
-  return null;
-}
+import { cloudsearch } from '@neteasecloudmusicapienhanced/api';
+import { getCookie } from '@/lib/netease-config';
 
 const statusToCat: Record<string, string> = {
   '美滋滋': '清新',
@@ -70,10 +59,8 @@ export async function GET(request: NextRequest) {
   const cat = mapKeywordToCat(keyword);
 
   try {
-    const { cloudsearch } = require('@neteasecloudmusicapienhanced/api');
-
     const langs = ['华语', '欧美', '韩语', '日语', '纯音乐'];
-    const allPlaylists: any[] = [];
+    const allPlaylists: Array<{ id: number; name: string; coverImgUrl: string; playCount: number; trackCount: number }> = [];
 
     for (const lang of langs) {
       if (allPlaylists.length >= 6) break;
@@ -81,7 +68,7 @@ export async function GET(request: NextRequest) {
       const limit = 1;
       try {
         const res = await cloudsearch({ keywords: searchKeyword, type: 1000, limit, cookie });
-        const playlists = res.body?.result?.playlists || [];
+        const playlists = (res.body as any)?.result?.playlists || [];
         for (const p of playlists) {
           if (allPlaylists.length >= 6) break;
           if (allPlaylists.some(x => x.id === p.id)) continue;

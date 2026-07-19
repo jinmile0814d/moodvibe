@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import WeatherCard from '@/components/WeatherCard';
 import StatusCard from '@/components/StatusCard';
@@ -16,15 +16,15 @@ const COOLDOWN = 30000;
 
 export default function HomePage() {
   const router = useRouter();
-  const [city, setCity] = useState('');
+  const [city, setCity] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem(CITY_KEY) || '';
+    }
+    return '';
+  });
   const [selectedStatuses, setSelectedStatuses] = useState<StatusItem[]>([]);
   const [generating, setGenerating] = useState(false);
   const lastGenTime = useRef(0);
-
-  useEffect(() => {
-    const savedCity = localStorage.getItem(CITY_KEY);
-    if (savedCity) setCity(savedCity);
-  }, []);
 
   const doGenerate = useCallback(async (currentCity: string, statuses: StatusItem[]) => {
     if (Date.now() - lastGenTime.current < COOLDOWN) return;

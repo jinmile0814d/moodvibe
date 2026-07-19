@@ -27,7 +27,7 @@ interface Track {
 export default function MusicPage() {
   const router = useRouter();
   const { play } = useAudio();
-  const [songs, setSongs] = useState<HistoryRecord[]>([]);
+  const [songs, setSongs] = useState<HistoryRecord[]>(() => getHistory());
   const [playlists, setPlaylists] = useState<Playlist[]>([]);
   const [loadingPlaylists, setLoadingPlaylists] = useState(true);
   const [activePlaylist, setActivePlaylist] = useState<Playlist | null>(null);
@@ -37,9 +37,66 @@ export default function MusicPage() {
   const PLAYLIST_CACHE_KEY = 'moodvibe-playlists-cache';
   const lastLatestId = useRef('');
   const lastStatusKey = useRef('');
+  const initializedRef = useRef(false);
+  const autoGenerateRef = useRef<(() => Promise<void>) | null>(null);
+
+  autoGenerateRef.current = async () => {
+    setRegenerating(true);
+    try {
+      let city = '';
+      let mood = 'chill';
+      let statusLabels: string[] = [];
+      let statusIds: string[] = [];
+      try {
+        city = localStorage.getItem('moodvibe-city') || '';
+        const statusRaw = localStorage.getItem('moodvibe-daily-status');
+        if (statusRaw) {
+          const { statuses } = JSON.parse(statusRaw);
+          if (statuses?.length > 0) {
+            statusLabels = statuses.map((s: { label: string }) => s.label);
+            statusIds = statuses.map((s: { id: string }) => s.id);
+            mood = statuses[0].baseMood || 'chill';
+          }
+        }
+      } catch {}
+
+      if (city && statusLabels.length > 0) {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ city, mood, statusLabels, statusIds }),
+        });
+        const data = await res.json();
+        if (data.bgm) {
+          const newRecord: HistoryRecord = {
+            id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            date: new Date().toISOString(),
+            city,
+            weather: data.weather,
+            temp: data.temp,
+            statuses: statusLabels.map((label: string) => ({ emoji: '', label })),
+            song: data.bgm.song,
+            artist: data.bgm.artist,
+            cover: data.bgm.cover,
+            gradient: data.gradient,
+            quote: data.quote || '',
+            url: data.bgm.url,
+            lyric: data.bgm.lyric,
+            songId: data.bgm.songId,
+          };
+          addHistory(newRecord);
+          setSongs(getHistory());
+        }
+      }
+    } catch {}
+    setRegenerating(false);
+  };
+
+  const autoGenerate = () => autoGenerateRef.current?.();
 
   useEffect(() => {
-    setSongs(getHistory());
+    if (initializedRef.current) return;
+    initializedRef.current = true;
 
     // 当前状态关键词
     let keyword = '';
@@ -66,24 +123,25 @@ export default function MusicPage() {
     if (!keyword) {
       setPlaylists([]);
       setLoadingPlaylists(false);
-    } else {
-      // 检查缓存是否匹配当前状态
-      let needFetch = true;
-      try {
-        const cached = localStorage.getItem(PLAYLIST_CACHE_KEY);
-        if (cached) {
-          const { playlists: cachedPlaylists, keyword: cachedKeyword } = JSON.parse(cached);
-          if (cachedPlaylists?.length > 0 && cachedKeyword === keyword) {
-            setPlaylists(cachedPlaylists);
-            setLoadingPlaylists(false);
-            needFetch = false;
-          }
-        }
-      } catch {}
+      return;
+    }
 
-      if (needFetch) {
-        fetchPlaylists(keyword);
+    // 检查缓存是否匹配当前状态
+    let needFetch = true;
+    try {
+      const cached = localStorage.getItem(PLAYLIST_CACHE_KEY);
+      if (cached) {
+        const { playlists: cachedPlaylists, keyword: cachedKeyword } = JSON.parse(cached);
+        if (cachedPlaylists?.length > 0 && cachedKeyword === keyword) {
+          setPlaylists(cachedPlaylists);
+          setLoadingPlaylists(false);
+          needFetch = false;
+        }
       }
+    } catch {}
+
+    if (needFetch) {
+      fetchPlaylists(keyword);
     }
 
     // 如果用户已设置状态但今天没有推荐歌曲，自动生成一首
@@ -154,58 +212,6 @@ export default function MusicPage() {
   }
 
   const [regenerating, setRegenerating] = useState(false);
-
-  async function autoGenerate() {
-    setRegenerating(true);
-    try {
-      let city = '';
-      let mood = 'chill';
-      let statusLabels: string[] = [];
-      let statusIds: string[] = [];
-      try {
-        city = localStorage.getItem('moodvibe-city') || '';
-        const statusRaw = localStorage.getItem('moodvibe-daily-status');
-        if (statusRaw) {
-          const { statuses } = JSON.parse(statusRaw);
-          if (statuses?.length > 0) {
-            statusLabels = statuses.map((s: { label: string }) => s.label);
-            statusIds = statuses.map((s: { id: string }) => s.id);
-            mood = statuses[0].baseMood || 'chill';
-          }
-        }
-      } catch {}
-
-      if (city && statusLabels.length > 0) {
-        const res = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ city, mood, statusLabels, statusIds }),
-        });
-        const data = await res.json();
-        if (data.bgm) {
-          const newRecord: HistoryRecord = {
-            id: `${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
-            date: new Date().toISOString(),
-            city,
-            weather: data.weather,
-            temp: data.temp,
-            statuses: statusLabels.map((label: string) => ({ emoji: '', label })),
-            song: data.bgm.song,
-            artist: data.bgm.artist,
-            cover: data.bgm.cover,
-            gradient: data.gradient,
-            quote: data.quote || '',
-            url: data.bgm.url,
-            lyric: data.bgm.lyric,
-            songId: data.bgm.songId,
-          };
-          addHistory(newRecord);
-          setSongs(getHistory());
-        }
-      }
-    } catch {}
-    setRegenerating(false);
-  }
 
   async function handleDeleteSong(record: HistoryRecord) {
     deleteHistoryRecord(record.id);

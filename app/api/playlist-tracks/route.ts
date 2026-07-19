@@ -1,17 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import fs from 'fs';
-import path from 'path';
-
-function getCookie(): string | null {
-  if (process.env.NETEASE_COOKIE) return process.env.NETEASE_COOKIE;
-  try {
-    const cookiePath = path.join(process.cwd(), '.netease_cookie');
-    if (fs.existsSync(cookiePath)) {
-      return fs.readFileSync(cookiePath, 'utf-8').trim();
-    }
-  } catch {}
-  return null;
-}
+import { playlist_track_all, song_url_v1, lyric } from '@neteasecloudmusicapienhanced/api';
+import { getCookie } from '@/lib/netease-config';
 
 export async function GET(request: NextRequest) {
   const id = request.nextUrl.searchParams.get('id');
@@ -25,27 +14,33 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const { playlist_track_all, song_url_v1, lyric } = require('@neteasecloudmusicapienhanced/api');
-
     const tracksRes = await playlist_track_all({ id: Number(id), limit: 30, cookie });
-    const tracks = tracksRes.body?.songs || [];
+    const songs = tracksRes.body?.songs;
+    if (!Array.isArray(songs)) {
+      return NextResponse.json({ tracks: [] });
+    }
 
     const result = await Promise.all(
-      tracks.slice(0, 20).map(async (song: { id: number; name: string; ar: { name: string }[]; al: { picUrl: string } }) => {
+      songs.slice(0, 20).map(async (song: { id: number; name: string; ar: { name: string }[]; al: { picUrl: string } }) => {
         let url: string | null = null;
         let lrc: string | null = null;
         try {
-          const urlRes = await song_url_v1({ id: song.id, level: 'standard', cookie });
-          url = urlRes.body?.data?.[0]?.url || null;
+          const urlRes = await song_url_v1({
+            id: song.id,
+            level: 'standard' as any,
+            cookie,
+            realIP: '116.25.146.177'
+          });
+          url = (urlRes.body as any)?.data?.[0]?.url || null;
         } catch {}
         try {
           const lyricRes = await lyric({ id: song.id, cookie });
-          lrc = lyricRes.body?.lrc?.lyric || null;
+          lrc = (lyricRes.body as any)?.lrc?.lyric || null;
         } catch {}
         return {
           id: song.id,
           song: song.name,
-          artist: song.ar?.map((a: { name: string }) => a.name).join('/') || '未知',
+          artist: song.ar?.map((a) => a.name).join('/') || '未知',
           cover: song.al?.picUrl || null,
           url,
           lyric: lrc,
