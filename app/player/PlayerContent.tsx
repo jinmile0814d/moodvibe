@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useAudio } from '@/components/AudioProvider';
 import { getHistoryById, addHistory } from '@/lib/history';
 import type { HistoryRecord } from '@/lib/types';
@@ -33,6 +33,8 @@ export default function PlayerContent() {
   const { state: audioState, play, togglePlay, seek } = useAudio();
   const [data, setData] = useState<HistoryRecord | null>(null);
   const [regenerating, setRegenerating] = useState(false);
+  const [showShareModal, setShowShareModal] = useState(false);
+  const shareCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -124,6 +126,32 @@ export default function PlayerContent() {
       play(newRecord);
     } catch {}
     setRegenerating(false);
+  }
+
+  async function handleShare() {
+    setShowShareModal(true);
+  }
+
+  async function downloadShareImage() {
+    if (!shareCardRef.current || !data) return;
+
+    try {
+      const html2canvas = (await import('html2canvas')).default;
+      const canvas = await html2canvas(shareCardRef.current, {
+        backgroundColor: null,
+        scale: 2,
+        useCORS: true,
+      });
+
+      const link = document.createElement('a');
+      link.download = `MoodVibe-${data.song}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+
+      alert('图片已保存！可以分享到微信了 🎵');
+    } catch (e) {
+      alert('生成图片失败，请重试');
+    }
   }
 
   if (!data) {
@@ -232,11 +260,7 @@ export default function PlayerContent() {
 
         <div className="flex items-center justify-center gap-8">
           <button
-            onClick={() => {
-              const text = `${data.quote} —— ${data.song}「${data.artist}」`;
-              if (navigator.share) navigator.share({ title: 'MoodVibe', text });
-              else { navigator.clipboard.writeText(text); alert('已复制到剪贴板！'); }
-            }}
+            onClick={handleShare}
             className="text-gray-500"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -267,6 +291,53 @@ export default function PlayerContent() {
           </button>
         </div>
       </div>
+
+      {/* 分享弹窗 */}
+      {showShareModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowShareModal(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-bold">分享到微信</h3>
+              <button onClick={() => setShowShareModal(false)} className="text-gray-400">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 分享卡片预览 */}
+            <div ref={shareCardRef} className="relative w-full aspect-square rounded-xl overflow-hidden mb-4" style={{ background: data.gradient?.css || 'linear-gradient(135deg, #f0f4ff, #e8f0fe)' }}>
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-6">
+                {data.cover && (
+                  <img src={data.cover} alt={data.song} className="w-48 h-48 rounded-xl shadow-lg object-cover mb-4" crossOrigin="anonymous" />
+                )}
+                <h2 className="text-xl font-bold text-gray-900 text-center mb-1">{data.song}</h2>
+                <p className="text-gray-600 text-sm mb-3">{data.artist}</p>
+                <p className="text-gray-700 text-xs text-center italic px-4 mb-4">「{data.quote}」</p>
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                  </svg>
+                  <span>MoodVibe</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <button
+                onClick={downloadShareImage}
+                className="w-full bg-[#07C160] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                保存图片分享到微信
+              </button>
+              <p className="text-xs text-gray-500 text-center">保存图片后，打开微信选择图片发送</p>
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
