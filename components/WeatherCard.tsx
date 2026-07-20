@@ -20,14 +20,25 @@ const CITY_KEY = 'moodvibe-city';
 const CACHE_KEY = 'moodvibe-weather-cache';
 const CACHE_TTL = 30 * 60 * 1000;
 
-type TimeOfDay = 'morning' | 'day' | 'evening' | 'night';
+const weatherGradients: Record<string, string> = {
+  '晴': 'linear-gradient(135deg, #FFE082 0%, #FFB74D 100%)',
+  '多云': 'linear-gradient(135deg, #B0BEC5 0%, #90A4AE 100%)',
+  '阴': 'linear-gradient(135deg, #CFD8DC 0%, #B0BEC5 100%)',
+  '雨': 'linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)',
+  '雪': 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
+  '雾': 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)',
+  '霾': 'linear-gradient(135deg, #D7CCC8 0%, #BCAAA4 100%)',
+};
 
-function getTimeOfDay(): TimeOfDay {
-  const h = new Date().getHours();
-  if (h >= 6 && h < 10) return 'morning';
-  if (h >= 10 && h < 17) return 'day';
-  if (h >= 17 && h < 20) return 'evening';
-  return 'night';
+function getWeatherGradient(weather: string): string {
+  if (weather.includes('晴')) return weatherGradients['晴'];
+  if (weather.includes('云')) return weatherGradients['多云'];
+  if (weather.includes('阴')) return weatherGradients['阴'];
+  if (weather.includes('雨') || weather.includes('雷')) return weatherGradients['雨'];
+  if (weather.includes('雪')) return weatherGradients['雪'];
+  if (weather.includes('雾')) return weatherGradients['雾'];
+  if (weather.includes('霾')) return weatherGradients['霾'];
+  return weatherGradients['多云'];
 }
 
 function getCurrentDate(): string {
@@ -111,7 +122,6 @@ export default function WeatherCard({ city, onCityChange }: Props) {
   const [loading, setLoading] = useState(false);
   const [showPicker, setShowPicker] = useState(false);
   const [filter, setFilter] = useState('');
-  const timeOfDay = getTimeOfDay();
   const currentDate = getCurrentDate();
 
   useEffect(() => {
@@ -186,14 +196,12 @@ export default function WeatherCard({ city, onCityChange }: Props) {
     );
   }
 
-  const weatherType = weather?.weather || 'cloudy';
-  const gradient = getGradient(weatherType, timeOfDay);
-  const dark = isDarkBg(timeOfDay);
-
-  const txt = dark ? 'text-white' : 'text-gray-800';
-  const txtSub = dark ? 'text-white/80' : 'text-gray-800';
-  const txtMuted = dark ? 'text-white/60' : 'text-gray-600';
-  const border = dark ? 'border-white/10' : 'border-gray-800/10';
+  const weatherType = weather?.weather || '多云';
+  const gradient = getWeatherGradient(weatherType);
+  const txt = 'text-gray-800';
+  const txtSub = 'text-gray-700';
+  const txtMuted = 'text-gray-600';
+  const border = 'border-gray-800/10';
 
   return (
     <div
