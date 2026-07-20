@@ -232,15 +232,6 @@ export default function PlayerContent() {
 
         <div className="flex items-center justify-center gap-8">
           <button
-            onClick={handleShare}
-            className="text-gray-500"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-            </svg>
-          </button>
-
-          <button
             onClick={togglePlay}
             disabled={!data.url}
             className="w-14 h-14 rounded-full bg-[#2C2C2C] flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed active:scale-95 transition-transform shadow-lg"
@@ -263,52 +254,6 @@ export default function PlayerContent() {
           </button>
         </div>
       </div>
-
-      {/* 分享弹窗 */}
-      {showShareModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowShareModal(false)}>
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-lg font-bold">分享音乐</h3>
-              <button onClick={() => setShowShareModal(false)} className="text-gray-400">
-                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-
-            {/* 预览卡片 */}
-            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 mb-6">
-              <div className="flex items-center gap-3 mb-2">
-                {data.cover && (
-                  <img src={data.cover} alt={data.song} className="w-12 h-12 rounded-lg object-cover" />
-                )}
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">{data.song}</p>
-                  <p className="text-xs text-gray-500 truncate">{data.artist}</p>
-                </div>
-              </div>
-              <p className="text-xs text-gray-600 italic">「{data.quote}」</p>
-            </div>
-
-            <div className="space-y-3">
-              <button
-                onClick={copyShareLink}
-                className="w-full bg-[#07C160] text-white py-3 rounded-lg font-medium flex items-center justify-center gap-2"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-                复制链接分享到微信
-              </button>
-              <p className="text-xs text-gray-500 text-center">
-                复制链接后，可发送到微信<br />
-                好友点击链接即可播放音乐
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </main>
   );
 }
