@@ -33,8 +33,6 @@ export default function PlayerContent() {
   const { state: audioState, play, togglePlay, seek } = useAudio();
   const [data, setData] = useState<HistoryRecord | null>(null);
   const [regenerating, setRegenerating] = useState(false);
-  const [showShareModal, setShowShareModal] = useState(false);
-  const shareCardRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const id = searchParams.get('id');
@@ -126,42 +124,6 @@ export default function PlayerContent() {
       play(newRecord);
     } catch {}
     setRegenerating(false);
-  }
-
-  async function handleShare() {
-    if (!data) return;
-
-    // 生成分享链接
-    const shareUrl = `${window.location.origin}/share/${data.id}`;
-
-    // 尝试使用Web Share API
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${data.song} - ${data.artist}`,
-          text: `${data.quote}\n\n听听我的氛围音乐 🎵`,
-          url: shareUrl,
-        });
-        return;
-      } catch (e) {
-        // 用户取消分享或不支持
-      }
-    }
-
-    // 降级方案：显示弹窗
-    setShowShareModal(true);
-  }
-
-  async function copyShareLink() {
-    if (!data) return;
-    const shareUrl = `${window.location.origin}/share/${data.id}`;
-
-    try {
-      await navigator.clipboard.writeText(shareUrl);
-      alert('分享链接已复制！可以发送到微信了 🎵');
-    } catch (e) {
-      alert(`分享链接：\n${shareUrl}`);
-    }
   }
 
   if (!data) {
