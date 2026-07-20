@@ -21,13 +21,13 @@ const CACHE_KEY = 'moodvibe-weather-cache';
 const CACHE_TTL = 30 * 60 * 1000;
 
 const weatherGradients: Record<string, string> = {
-  '晴': 'linear-gradient(135deg, #FFE082 0%, #FFB74D 100%)',
-  '多云': 'linear-gradient(135deg, #B0BEC5 0%, #90A4AE 100%)',
-  '阴': 'linear-gradient(135deg, #CFD8DC 0%, #B0BEC5 100%)',
-  '雨': 'linear-gradient(135deg, #64B5F6 0%, #42A5F5 100%)',
-  '雪': 'linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%)',
-  '雾': 'linear-gradient(135deg, #ECEFF1 0%, #CFD8DC 100%)',
-  '霾': 'linear-gradient(135deg, #D7CCC8 0%, #BCAAA4 100%)',
+  '晴': 'linear-gradient(135deg, #D4A574 0%, #B8956A 100%)',      // 莫兰迪金色
+  '多云': 'linear-gradient(135deg, #8C9AA6 0%, #7A8A98 100%)',    // 莫兰迪灰蓝
+  '阴': 'linear-gradient(135deg, #9FA8B0 0%, #8A949E 100%)',      // 莫兰迪浅灰
+  '雨': 'linear-gradient(135deg, #6B8CAE 0%, #5A7B9D 100%)',      // 莫兰迪蓝
+  '雪': 'linear-gradient(135deg, #A8C5D6 0%, #8FB4CB 100%)',      // 莫兰迪浅蓝
+  '雾': 'linear-gradient(135deg, #B5BDC4 0%, #9DA7AF 100%)',      // 莫兰迪雾灰
+  '霾': 'linear-gradient(135deg, #B09A8C 0%, #9B8778 100%)',      // 莫兰迪棕灰
 };
 
 function getWeatherGradient(weather: string): string {
@@ -198,10 +198,10 @@ export default function WeatherCard({ city, onCityChange }: Props) {
 
   const weatherType = weather?.weather || '多云';
   const gradient = getWeatherGradient(weatherType);
-  const txt = 'text-gray-800';
-  const txtSub = 'text-gray-700';
-  const txtMuted = 'text-gray-600';
-  const border = 'border-gray-800/10';
+  const txt = 'text-white';
+  const txtSub = 'text-white/90';
+  const txtMuted = 'text-white/70';
+  const border = 'border-white/15';
 
   return (
     <div
