@@ -47,41 +47,6 @@ function getCurrentDate(): string {
   return `${(now.getMonth() + 1)}月${now.getDate()}日 ${weekdays[now.getDay()]}`;
 }
 
-const gradientMap: Record<string, Record<TimeOfDay, string>> = {
-  sunny: {
-    morning: 'linear-gradient(135deg, #FDF6EE 0%, #FAE8D4 100%)',
-    day: 'linear-gradient(135deg, #FEF0E3 0%, #FDDCBC 100%)',
-    evening: 'linear-gradient(135deg, #E8CDB5 0%, #C4A68A 100%)',
-    night: 'linear-gradient(135deg, #3B4856 0%, #2C3441 100%)',
-  },
-  cloudy: {
-    morning: 'linear-gradient(135deg, #EEF4F8 0%, #DFEAF2 100%)',
-    day: 'linear-gradient(135deg, #E4EDF5 0%, #D0DDE9 100%)',
-    evening: 'linear-gradient(135deg, #98A8B8 0%, #6E8090 100%)',
-    night: 'linear-gradient(135deg, #3A4350 0%, #2A3140 100%)',
-  },
-  rainy: {
-    morning: 'linear-gradient(135deg, #E8F0F8 0%, #D4E4F0 100%)',
-    day: 'linear-gradient(135deg, #DCE8F4 0%, #C2D6E8 100%)',
-    evening: 'linear-gradient(135deg, #7A92A8 0%, #56707E 100%)',
-    night: 'linear-gradient(135deg, #2E3A48 0%, #1E2832 100%)',
-  },
-  snowy: {
-    morning: 'linear-gradient(135deg, #F5F0F8 0%, #EAE2F0 100%)',
-    day: 'linear-gradient(135deg, #EDE6F4 0%, #DDD4EA 100%)',
-    evening: 'linear-gradient(135deg, #8E86A0 0%, #6A6280 100%)',
-    night: 'linear-gradient(135deg, #343042 0%, #262238 100%)',
-  },
-};
-
-function getGradient(weather: string, time: TimeOfDay): string {
-  return gradientMap[weather]?.[time] || gradientMap.cloudy[time];
-}
-
-function isDarkBg(time: TimeOfDay): boolean {
-  return time === 'night' || time === 'evening';
-}
-
 function getWeatherIcon(description: string): string {
   if (description.includes('晴')) return '☀️';
   if (description.includes('云') || description.includes('阴')) return '☁️';
